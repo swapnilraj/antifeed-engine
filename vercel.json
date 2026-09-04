@@ -1,0 +1,5 @@
+{
+  "buildCommand": "node scripts/build-site.mjs",
+  "outputDirectory": "public",
+  "framework": null
+}

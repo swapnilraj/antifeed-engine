@@ -1,0 +1,112 @@
+{
+  "_comment": "Curated knowledge wells for collectors/knowledge.mjs — the authoritative, evergreen counterpart to social search. Each topic names the interest/boost it feeds (match), plus Wikipedia search terms, arXiv phrase queries, and curated YouTube channel_ids. Quality is by construction: you pick the wells, the ranker in CLAUDE.md still decides what's kept. Add a YouTube channel_id by opening youtube.com/@handle and copying the UC… from its RSS link (channel_id=UC…).",
+  "wikipedia": {
+    "enabled": true,
+    "perQuery": 3
+  },
+  "arxiv": {
+    "enabled": true,
+    "perQuery": 4
+  },
+  "youtube": {
+    "enabled": true,
+    "perChannel": 4
+  },
+  "topics": {
+    "geoengineering": {
+      "match": "Marine cloud brightening / geoengineering [boost +3]",
+      "wikipedia": [
+        "marine cloud brightening",
+        "solar radiation modification geoengineering",
+        "stratospheric aerosol injection",
+        "carbon dioxide removal"
+      ],
+      "arxiv": [
+        "marine cloud brightening",
+        "stratospheric aerosol injection",
+        "solar radiation management"
+      ],
+      "youtube": [
+        "UCRRr_xrOm66qaigIbwFLvbQ",
+        "UCRBwLPbXGsI2cJe9W1zfSjQ",
+        "UCb72Gn5LXaLEcsOuPKGfQOg",
+        "UCpxYSWgxVt3Pyn1ovXsGQ0g"
+      ],
+      "youtube_note": "Simon Clark, Just Have a Think, DW Planet A, PBS Terra — climate-science channels; the ranker filters to genuinely SRM/geoengineering videos."
+    },
+    "compute-ai-economics": {
+      "match": "Compute & AI economics",
+      "wikipedia": [
+        "AI accelerator hardware",
+        "Graphics processing unit",
+        "Data center"
+      ],
+      "arxiv": [
+        "large language model inference efficiency",
+        "GPU cluster training cost",
+        "GPU cloud spot pricing",
+        "compute resource pricing auction"
+      ],
+      "youtube": [
+        "UCbGy2YOZaQ2ZqCkixSokTKQ"
+      ],
+      "youtube_note": "Asianometry (@Asianometry) — semiconductors, chip supply chains, and the economics of compute; the ranker keeps the substantive fab/AI-hardware breakdowns."
+    },
+    "prediction-markets": {
+      "match": "Prediction markets & market microstructure",
+      "wikipedia": [
+        "Prediction market",
+        "Market microstructure"
+      ],
+      "arxiv": [
+        "prediction market",
+        "market microstructure",
+        "forward contract market microstructure",
+        "commodity futures term structure"
+      ],
+      "youtube": [
+        "UCASM0cgfkJxQ1ICmRilfHLw"
+      ],
+      "youtube_note": "Patrick Boyle (@PBoyle) — former quant/hedge-fund manager; rigorous market-structure, liquidity, and derivatives explainers. The ranker filters to the microstructure/markets substance."
+    },
+    "economics-explainers": {
+      "match": "Economics explainers / Marketing / Creator & platform economy",
+      "wikipedia": [
+        "Attention economy",
+        "Network effect",
+        "Two-sided market"
+      ],
+      "arxiv": [],
+      "youtube": [
+        "UCgv4dPk_qZNAbUW9WkuLPSA"
+      ],
+      "youtube_note": "Atrioc (@Atrioc) — 'Marketing Monday' business/econ & platform-economy breakdowns; the ranker filters to the substantive explainers, not the gaming VODs."
+    },
+    "nuclear-energy": {
+      "match": "Nuclear energy (the science) [boost +2]",
+      "level_note": "FUNDAMENTALS-FIRST (Swapnil, 2026-08-19: 'I need much simpler stuff — the very basics of the science; the arXiv was too much'). Serve the beginner ladder before any depth: what a nucleus/isotope is, what makes something radioactive, how fission releases energy, what a chain reaction is, and how a reactor turns that into electricity. Prefer the INTRO of a basic Wikipedia page (or a plain-English YouTube explainer) over a specialist page. NO arXiv — it is too advanced for where he is. Build up gradually across sweeps; only reach for neutronics/thermal-hydraulics/fuel-cycle detail once the basics are clearly landed.",
+      "wikipedia": [
+        "Nuclear power",
+        "Nuclear reactor",
+        "Nuclear fission",
+        "Nuclear chain reaction",
+        "Radioactive decay",
+        "Atomic nucleus",
+        "Isotope",
+        "Half-life",
+        "Uranium",
+        "Enriched uranium",
+        "Nuclear fusion",
+        "Pressurized water reactor"
+      ],
+      "arxiv": [],
+      "youtube": [
+        "UCfTNPE8mXGBZPC1nfVtOJTw",
+        "UCg0VO_LJZjTzubUQ34CwnLQ",
+        "UCXKouECowMMRtZBm0SxLwZA",
+        "UC-qoOdavj0l05i8ArfxkNdg"
+      ],
+      "youtube_note": "Kyle Hill (accessible nuclear science communication — FIRST choice for the basics), T. Folse Nuclear (working nuclear-engineer explainers, still approachable), Improbable Matter (physics), Copenhagen Atomics (molten-salt R&D — more advanced). The ranker should now KEEP the clear beginner-friendly explainers and DROP anything that assumes prior reactor-physics knowledge — the opposite of the old 'keep the most technical' rule."
+    }
+  }
+}

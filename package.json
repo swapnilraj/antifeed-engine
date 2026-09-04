@@ -1,0 +1,31 @@
+{
+  "name": "antifeed",
+  "version": "1.0.2",
+  "description": "antifeed — a feed ranked by an interest profile you write in markdown. Any coding agent (Claude Code, Codex, …) runs the sweep; this package is the deterministic engine around it.",
+  "license": "MIT",
+  "repository": "github:swapnilraj/antifeed-engine",
+  "bin": {
+    "antifeed": "./wall.mjs",
+    "wall": "./wall.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "collect": "node wall.mjs collect",
+    "archive": "node wall.mjs archive",
+    "doctor": "node wall.mjs doctor",
+    "test": "node --test tests/*.test.mjs",
+    "validate": "node core/validate-items.mjs && node core/validate-runs.mjs && node core/validate-learning.mjs && node core/validate-openness.mjs",
+    "build": "node wall.mjs build",
+    "publish-wall": "node wall.mjs publish",
+    "release": "node wall.mjs release"
+  },
+  "dependencies": {
+    "@vercel/blob": "^2.6.1"
+  },
+  "config": {
+    "templateRepo": "swapnilraj/antifeed",
+    "engineRepo": "swapnilraj/antifeed-engine"
+  }
+}

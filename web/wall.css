@@ -1,0 +1,360 @@
+  :root {
+    --bg: #ffffff; --text: #0f1419; --muted: #536471; --border: #eff3f4;
+    --accent: #1d9bf0; --chip: #eff3f4; --card: #ffffff;
+    --ig-border: #dbdbdb; --ig-text: #262626; --ig-muted: #8e8e8e;
+    --note: #b4540a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000; --text: #e7e9ea; --muted: #71767b; --border: #2f3336;
+      --accent: #1d9bf0; --chip: #16181c; --card: #000000;
+      --ig-border: #363636; --ig-text: #f5f5f5; --ig-muted: #a8a8a8;
+      --note: #e8833a;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font: 15px/1.35 -apple-system, "Segoe UI", system-ui, Roboto, sans-serif;
+    padding-bottom: 4rem;
+  }
+  .wrap { max-width: 600px; margin: 0 auto; border-left: 1px solid var(--border); border-right: 1px solid var(--border); min-height: 100vh; }
+  header { padding: 0.6rem 0.9rem 0.4rem; position: sticky; top: 0; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(12px); z-index: 5; border-bottom: 1px solid var(--border); transition: transform 0.25s ease; will-change: transform; }
+  header.hdr-hide { transform: translateY(-100%); }
+  @media (prefers-reduced-motion: reduce) { header { transition: none; } }
+  header h1 { font-size: 1.05rem; font-weight: 800; display: inline; }
+  /* source feeds — Twitter-style tab bar: one scrollable row, underline on the
+     active feed, no wrapping. Each source is a feed; "all" is the For-you blend. */
+  .tabs { display: flex; gap: 0; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; margin: 0.3rem -0.9rem 0; padding: 0 0.5rem; border-bottom: 1px solid var(--border); }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tabs button { flex: 0 0 auto; background: none; border: 0; color: var(--muted); font-weight: 600; font-size: 0.9rem; padding: 0.45rem 0.7rem 0.55rem; cursor: pointer; position: relative; white-space: nowrap; transition: color 0.15s; }
+  .tabs button:hover { color: var(--text); }
+  .tabs button.active { color: var(--text); font-weight: 800; }
+  .tabs button.active::after { content: ""; position: absolute; left: 0.7rem; right: 0.7rem; bottom: -1px; height: 3px; background: var(--accent); border-radius: 3px 3px 0 0; }
+  /* topic filters — secondary: compact chips, also one scrollable row, no wrap */
+  .chiprow { display: flex; gap: 0.35rem; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; margin: 0.45rem 0 0.15rem; }
+  .chiprow::-webkit-scrollbar { display: none; }
+  .chiprow button {
+    flex: 0 0 auto; background: var(--chip); color: var(--muted); border: 1px solid var(--border);
+    border-radius: 999px; padding: 0.14rem 0.66rem; font-size: 0.75rem; cursor: pointer; font-weight: 600; white-space: nowrap; transition: color 0.15s, background 0.15s;
+  }
+  .chiprow button:hover { color: var(--text); }
+  .chiprow button.active { background: var(--text); border-color: var(--text); color: var(--bg); }
+
+  .avatar {
+    width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+    background: #3b4b5a; color: #fff; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 1.05rem; overflow: hidden;
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* ---- X / Twitter post ---- */
+  .tweet { display: flex; gap: 12px; padding: 12px 16px 8px; border-bottom: 1px solid var(--border); }
+  .tweet .body { flex: 1; min-width: 0; }
+  .tweet .head { display: flex; align-items: baseline; gap: 4px; flex-wrap: wrap; font-size: 15px; }
+  .tweet .name { font-weight: 700; }
+  .tweet .name svg { width: 16px; height: 16px; vertical-align: -3px; fill: var(--accent); }
+  .tweet .handle, .tweet .dot, .tweet .time { color: var(--muted); }
+  .tweet .text { margin-top: 2px; font-size: 15px; line-height: 20px; white-space: pre-wrap; }
+  /* Cap media to the viewport so the whole image is visible without scrolling
+     the card off-screen. No explicit width here, so aspect ratio is preserved
+     and object-fit isn't needed — the image just shrinks to fit both bounds. */
+  .tweet .media { margin-top: 10px; border-radius: 16px; border: 1px solid var(--border); max-width: 100%; max-height: min(70vh, 540px); display: block; }
+  .tweet .actions { display: flex; justify-content: space-between; max-width: 425px; margin-top: 10px; color: var(--muted); font-size: 13px; }
+  .tweet .actions span { display: flex; align-items: center; gap: 6px; }
+  .tweet .actions svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+
+  /* ---- Share: copy the original post link ----
+     Confirmation follows the site's own idioms: the outlined, accent-tinted
+     chip (cf. .fb-more.on / .catpill) and the "✓ read" checkmark marker. */
+  .act-share { position: relative; cursor: pointer; transition: color .15s ease; }
+  .act-share:hover { color: var(--accent); }
+  .act-share.copied svg { stroke: var(--accent); }
+  .act-share.copyfail svg { stroke: var(--note); }
+  .act-share.copied::after,
+  .act-share.copyfail::after {
+    content: "✓ Copied";
+    position: absolute; bottom: calc(100% + 7px); left: 50%; transform: translateX(-50%);
+    white-space: nowrap; font-size: 11px; line-height: 1; font-weight: 600;
+    padding: 3px 9px; border-radius: 999px; pointer-events: none; z-index: 5;
+    color: var(--accent); border: 1px solid var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, var(--bg));
+  }
+  .act-share.copyfail::after {
+    content: "Couldn't copy"; color: var(--note); border-color: var(--note);
+    background: color-mix(in srgb, var(--note) 12%, var(--bg));
+  }
+
+  /* ---- Instagram post ---- */
+  .ig { border: 1px solid var(--ig-border); border-radius: 8px; margin: 12px 16px; background: var(--card); color: var(--ig-text); }
+  .ig .head { display: flex; align-items: center; gap: 10px; padding: 10px 12px; font-size: 14px; font-weight: 600; }
+  .ig .head .avatar { width: 32px; height: 32px; font-size: 0.85rem; }
+  .ig .head .more { margin-left: auto; color: var(--ig-text); letter-spacing: 2px; font-weight: 700; }
+  /* width:100% is explicit (reels/covers rely on it), so cap height AND
+     object-fit:contain to keep the whole image visible inside a viewport-
+     bounded frame (letterboxed for tall/portrait media, like Instagram). */
+  .ig .media { width: 100%; max-height: min(70vh, 540px); object-fit: contain; display: block; }
+  .ig .media-wrap { position: relative; }
+  .ig .reel-badge { position: absolute; top: 10px; right: 12px; font-size: 17px; color: #fff; filter: drop-shadow(0 1px 2px rgba(0,0,0,.7)); pointer-events: none; }
+  /* Self-hosted reel: cover facade → inline <video> on click. */
+  .ig .ig-play { cursor: pointer; }
+  .ig .ig-play.playing { cursor: default; }
+  .ig .ig-play video.media { display: block; width: 100%; max-height: min(70vh, 540px); object-fit: contain; background: #000; }
+  .ig .play-badge { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 52px; height: 52px; border-radius: 50%; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; pointer-events: none; transition: background .15s; }
+  .ig .play-badge::after { content: ""; border-left: 17px solid #fff; border-top: 10px solid transparent; border-bottom: 10px solid transparent; margin-left: 4px; }
+  .ig .ig-play:hover .play-badge, .ig .ig-play:focus-visible .play-badge { background: rgba(0,0,0,.78); }
+  .ig .textonly { padding: 28px 16px; font-size: 17px; line-height: 1.5; text-align: center; background: linear-gradient(135deg, #405de6, #833ab4, #c13584); color: #fff; }
+
+  /* ---- Multi-image carousel (renders inside the Instagram card) ---- */
+  /* Swiping is native CSS scroll-snap; JS only updates the count/dots. */
+  .carousel { position: relative; }
+  .carousel-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .carousel-track::-webkit-scrollbar { display: none; }
+  /* A fixed, viewport-bounded frame shared by every slide: the whole image is
+     visible (contain + letterbox), and the frame height never changes between
+     slides, so swiping doesn't make the card jump/resize. */
+  .carousel-slide { flex: 0 0 100%; width: 100%; height: min(70vh, 540px); object-fit: contain; background: #000; scroll-snap-align: center; scroll-snap-stop: always; }
+  .carousel-count { position: absolute; top: 10px; right: 12px; padding: 2px 8px; border-radius: 12px; background: rgba(0,0,0,.6); color: #fff; font-size: 12px; font-weight: 600; pointer-events: none; }
+  .carousel-dots { position: absolute; bottom: 10px; left: 0; right: 0; display: flex; justify-content: center; gap: 6px; pointer-events: none; }
+  .carousel-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.5); transition: background .15s, transform .15s; }
+  .carousel-dot.active { background: #fff; transform: scale(1.25); }
+  /* Single image on a link card: match the framed article media look. */
+  .linkcard .media { margin-top: 10px; border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
+  .ig .actions { display: flex; gap: 14px; padding: 8px 12px 0; }
+  .ig .actions svg { width: 24px; height: 24px; fill: none; stroke: var(--ig-text); stroke-width: 1.8; }
+  .ig .actions .save { margin-left: auto; }
+  .ig .likes { padding: 6px 12px 0; font-size: 14px; font-weight: 600; }
+  .ig .caption { padding: 4px 12px; font-size: 14px; }
+  .ig .caption b { margin-right: 6px; }
+  .ig .time { padding: 2px 12px 12px; font-size: 10px; text-transform: uppercase; color: var(--ig-muted); letter-spacing: 0.2px; }
+
+  /* ---- generic link card ---- */
+  .linkcard { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .linkcard .head { display: flex; gap: 8px; align-items: baseline; font-size: 14px; }
+  .linkcard .name { font-weight: 700; }
+  .linkcard .time { color: var(--muted); }
+  .linkcard .text { margin-top: 4px; font-size: 15px; line-height: 20px; }
+  /* Media-led card: the text sits under the image/carousel as a caption. */
+  .linkcard.has-media .text { margin-top: 10px; }
+
+  /* ---- adaptive learning / retrieval-practice card ---- */
+  .quizcard {
+    padding: 15px 16px 16px; border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 8%, var(--bg)), var(--bg) 58%);
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+  .quiz-head { display: flex; gap: 7px; align-items: center; color: var(--muted); font-size: 11px; font-weight: 700; }
+  .quiz-badge { color: #fff; background: var(--accent); border-radius: 4px; padding: 1px 6px; text-transform: uppercase; letter-spacing: .45px; font-size: 9px; }
+  .quiz-progress { margin-left: auto; font-variant-numeric: tabular-nums; }
+  .quiz-rung { margin-top: 10px; color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .35px; }
+  .quiz-prompt { margin-top: 4px; font-size: 17px; line-height: 1.38; font-weight: 750; }
+  .quiz-cue { margin-top: 5px; color: var(--muted); font-size: 11px; }
+  .quiz-choices { display: grid; gap: 7px; margin-top: 12px; }
+  .quiz-choice {
+    width: 100%; display: flex; gap: 9px; align-items: flex-start; text-align: left;
+    color: var(--text); background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 9px 11px; font: inherit; font-size: 13px; line-height: 1.35;
+    cursor: pointer; transition: border-color .12s, background .12s, transform .12s;
+  }
+  .quiz-choice:hover, .quiz-choice:focus-visible { border-color: var(--accent); outline: 0; transform: translateY(-1px); }
+  .quiz-choice span { flex: 0 0 20px; color: var(--muted); font-weight: 800; }
+  .quiz-choice:disabled { cursor: default; transform: none; opacity: .62; }
+  .quiz-choice.correct { border-color: #17a34a; background: color-mix(in srgb, #17a34a 12%, var(--card)); opacity: 1; }
+  .quiz-choice.correct span { color: #17a34a; }
+  .quiz-choice.wrong { border-color: #d93838; background: color-mix(in srgb, #d93838 10%, var(--card)); opacity: 1; }
+  .quiz-choice.wrong span { color: #d93838; }
+  .quiz-result { margin-top: 11px; border-top: 1px solid var(--border); padding-top: 10px; font-size: 13px; line-height: 1.45; }
+  .quiz-result[hidden] { display: none; }
+  .quiz-result-title { display: block; color: var(--accent); margin-bottom: 2px; }
+  .quiz-result a { color: var(--accent); font-size: 11px; font-weight: 700; margin-left: 5px; text-decoration: none; white-space: nowrap; }
+  .quiz-next { color: var(--muted); font-size: 11px; margin-top: 5px; }
+
+  /* ---- opt-in openness experiment ---- */
+  .op-card {
+    padding: 15px 16px 16px; border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, color-mix(in srgb, #7c3aed 9%, var(--bg)), var(--bg) 62%);
+    box-shadow: inset 3px 0 0 #7c3aed;
+  }
+  .op-head { display: flex; gap: 7px; align-items: center; color: var(--muted); font-size: 11px; font-weight: 700; }
+  .op-head > span:nth-child(2) { color: var(--text); }
+  .op-progress { margin-left: auto; text-transform: uppercase; letter-spacing: .35px; }
+  .op-badge { color: #fff; background: #7c3aed; border-radius: 4px; padding: 1px 6px; text-transform: uppercase; letter-spacing: .45px; font-size: 9px; font-weight: 800; }
+  .op-kind-adjacent { background: #2563eb; }
+  .op-kind-wildcard { background: #7c3aed; }
+  .op-kind-counterpoint { background: #b45309; }
+  .op-intro, .op-prompt { margin-top: 10px; font-size: 14px; line-height: 1.48; }
+  .op-prompt { font-size: 16px; font-weight: 650; }
+  .op-card details { margin-top: 10px; }
+  .op-card summary { cursor: pointer; color: #7c3aed; font-weight: 750; }
+  .op-cue { color: var(--muted); font-size: 11px; margin: 7px 0; }
+  .op-survey-row { border: 0; border-top: 1px solid var(--border); padding: 10px 0 8px; }
+  .op-survey-row legend { width: 100%; font-size: 13px; line-height: 1.4; padding-top: 8px; }
+  .op-scale { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-top: 8px; }
+  .op-scale label { cursor: pointer; }
+  .op-scale input { position: absolute; opacity: 0; }
+  .op-scale span { display: block; text-align: center; border: 1px solid var(--border); border-radius: 8px; padding: 6px; color: var(--muted); }
+  .op-scale input:checked + span { border-color: #7c3aed; color: #7c3aed; background: color-mix(in srgb, #7c3aed 12%, var(--card)); font-weight: 800; }
+  .op-scale input:focus-visible + span { outline: 2px solid #7c3aed; outline-offset: 1px; }
+  .op-scale-ends { display: flex; justify-content: space-between; color: var(--muted); font-size: 9px; margin-top: 3px; }
+  .op-primary, .op-skip, .op-prediction button, .op-reflection-text button {
+    border: 0; border-radius: 999px; padding: .38rem .9rem; font: inherit; font-size: 12px; font-weight: 750; cursor: pointer;
+  }
+  .op-primary { background: #7c3aed; color: #fff; }
+  .op-skip { color: var(--muted); background: var(--chip); border: 1px solid var(--border); }
+  .op-source { color: #7c3aed; font-size: 11px; margin-left: 7px; text-decoration: none; }
+  .op-error { min-height: 16px; margin: 4px 0; color: #d93838; font-size: 11px; }
+  .op-card textarea { width: 100%; min-height: 72px; resize: vertical; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 9px; font: inherit; font-size: 13px; margin-top: 9px; }
+  .op-card textarea:focus, .op-prediction input:focus, .op-reflection-text input:focus { outline: 0; border-color: #7c3aed; }
+  .op-buttons { display: flex; gap: 7px; }
+  .op-plan { margin-top: 9px; font-size: 13px; }
+  .op-sources { display: grid; gap: 5px; margin-top: 9px; }
+  .op-sources label { display: flex; gap: 7px; align-items: flex-start; font-size: 12px; line-height: 1.35; cursor: pointer; }
+  .op-retention { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+  .op-retention label { background: var(--chip); border: 1px solid var(--border); border-radius: 999px; padding: 3px 8px; font-size: 11px; cursor: pointer; }
+
+  .openness-addon { margin-top: 10px; padding: 9px; border: 1px solid color-mix(in srgb, #7c3aed 40%, var(--border)); border-radius: 10px; background: color-mix(in srgb, #7c3aed 5%, var(--card)); }
+  .ig .openness-addon { margin: 8px 12px 12px; }
+  .op-explore-head { display: flex; align-items: flex-start; gap: 7px; color: var(--muted); font-size: 11px; line-height: 1.4; }
+  .op-cred, .op-saved { color: var(--muted); font-size: 11px; margin-top: 7px; line-height: 1.4; }
+  .op-prediction, .op-reflection-text { display: flex; gap: 6px; margin-top: 8px; }
+  .op-reflection-text[hidden] { display: none; }
+  .op-prediction input, .op-reflection-text input { flex: 1; min-width: 0; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 999px; padding: .32rem .7rem; font: inherit; font-size: 11px; }
+  .op-prediction button, .op-reflection-text button { background: #7c3aed; color: #fff; padding-inline: .7rem; }
+  .op-after { display: none; margin-top: 8px; border-top: 1px solid var(--border); padding-top: 6px; }
+  article.isread .op-after { display: block; }
+  .op-outcomes { display: flex; gap: 5px; flex-wrap: wrap; }
+  .op-outcomes button { color: var(--muted); background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 3px 8px; font: inherit; font-size: 10px; cursor: pointer; }
+  .op-outcomes button.on { color: #7c3aed; border-color: #7c3aed; background: color-mix(in srgb, #7c3aed 10%, var(--card)); font-weight: 750; }
+  .op-dashboard button { margin-top: 7px; color: var(--muted); background: none; border: 0; padding: 0; font: inherit; font-size: 11px; text-decoration: underline; cursor: pointer; }
+  .op-scores { display: flex; flex-wrap: wrap; gap: 5px 12px; margin-top: 7px; }
+  .op-delta { margin-top: 5px; font-size: 11px; }
+
+  .catpill { font-size: 11px; color: var(--muted); border: 1px solid var(--border); border-radius: 999px; padding: 0 8px; margin-left: auto; align-self: center; }
+  .tweet .srcbadge { font-size: 10px; font-weight: 800; letter-spacing: 0.3px; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 0 4px; }
+  /* FT cards: the paper's masthead — claret on solid FT pink, opaque so it reads on both themes */
+  .tweet .srcbadge.src-ft { color: #990f3d; background: #fff1e5; border-color: #fff1e5; }
+
+  /* ---- market-thesis card ---- */
+  .thesiscard { display: block; padding: 14px 16px 10px; }
+  .thesiscard .thead { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .thesiscard .tasset { font-weight: 800; font-size: 15px; }
+  .thesiscard .tspot { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; }
+  .thesiscard .tbias { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 1px 9px; border: 1px solid var(--border); }
+  .thesiscard .bias-short { color: #d93838; border-color: color-mix(in srgb, #d93838 55%, var(--border)); background: color-mix(in srgb, #d93838 10%, transparent); }
+  .thesiscard .bias-long { color: #17a34a; border-color: color-mix(in srgb, #17a34a 55%, var(--border)); background: color-mix(in srgb, #17a34a 10%, transparent); }
+  .thesiscard .bias-flat { color: var(--muted); }
+  .thesiscard .tconv { font-size: 11px; color: var(--muted); }
+  .thesiscard .time { font-size: 12px; }
+  .thesiscard .tactionable { margin-top: 10px; font-size: 15px; line-height: 1.45; font-weight: 500; }
+  .thesiscard .tbracket { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  .thesiscard .tbracket em { color: var(--muted); font-style: normal; text-transform: uppercase; letter-spacing: 0.4px; font-size: 10px; margin-right: 4px; }
+  .thesiscard .tlevels { width: 100%; border-collapse: collapse; margin-top: 11px; font-size: 12.5px; }
+  .thesiscard .tlevels td { padding: 4px 8px 4px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .thesiscard .tl-lvl { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .thesiscard .tl-role { color: var(--text); }
+  .thesiscard .tl-src { text-align: right; white-space: nowrap; }
+  .thesiscard .tl-src a { color: var(--accent); text-decoration: none; }
+  .thesiscard .tfc { margin-top: 12px; }
+  .thesiscard .tfc-h { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 5px; }
+  .thesiscard .tfc-row { display: flex; gap: 7px; font-size: 12.5px; line-height: 1.4; margin-bottom: 3px; }
+  .thesiscard .tfc-v { font-weight: 800; width: 14px; flex: 0 0 14px; text-align: center; }
+  .thesiscard .v-ok { color: #17a34a; }
+  .thesiscard .v-no { color: #d93838; }
+  .thesiscard .v-mid { color: var(--note); }
+  .thesiscard .treason { margin-top: 12px; font-size: 13px; line-height: 1.5; color: var(--text); }
+  .thesiscard .tflip { margin-top: 8px; font-size: 12.5px; color: var(--muted); }
+  .thesiscard .tflip em { font-style: normal; text-transform: uppercase; letter-spacing: 0.4px; font-size: 10px; color: var(--note); margin-right: 4px; }
+  .thesiscard .tprov { margin-top: 11px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 11.5px; }
+  .thesiscard .tprov-chip { color: var(--accent); text-decoration: none; border: 1px solid var(--border); border-radius: 999px; padding: 1px 9px; }
+  .thesiscard .tprov-chip:hover { border-color: var(--accent); }
+  .thesiscard .dim { color: var(--muted); font-weight: 400; }
+  .tweet .media-wrap { position: relative; display: block; }
+  .tweet .play-badge { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 52px; height: 52px; border-radius: 50%; background: rgba(0,0,0,.62); display: flex; align-items: center; justify-content: center; pointer-events: none; transition: background .15s; }
+  .tweet .play-badge::after { content: ""; border-left: 17px solid #fff; border-top: 10px solid transparent; border-bottom: 10px solid transparent; margin-left: 4px; }
+  /* YouTube click-to-play: thumbnail facade swaps for an inline iframe on click — no navigation */
+  .tweet .yt-play { cursor: pointer; margin-top: 10px; border-radius: 16px; overflow: hidden; border: 1px solid var(--border); aspect-ratio: 16 / 9; }
+  .tweet .yt-play img.media { margin: 0; border: 0; border-radius: 0; width: 100%; height: 100%; object-fit: cover; }
+  .tweet .yt-play:hover .play-badge, .tweet .yt-play:focus-visible .play-badge { background: rgba(229,57,53,.92); }
+  .tweet .yt-play.playing { cursor: default; }
+  .tweet .yt-play iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .why { font-size: 11.5px; color: var(--muted); margin-top: 7px; line-height: 1.4; display: flex; align-items: center; gap: 6px; }
+  .why .mark { color: var(--accent); }
+  .why b { color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .why .whytext { flex: 1; min-width: 0; }
+  .why-ig { margin: 6px 16px -2px; }
+
+  /* ---- feedback pills (more/less like this) ---- */
+  .fb { display: flex; gap: 4px; flex-shrink: 0; }
+  .fb button {
+    background: none; border: 1px solid var(--border); color: var(--muted);
+    border-radius: 999px; width: 24px; height: 24px; font-size: 13px; line-height: 1;
+    cursor: pointer; padding: 0; transition: color .1s, border-color .1s, background .1s;
+  }
+  .fb button:hover { border-color: var(--muted); color: var(--text); }
+  .fb .fb-more.on { color: var(--accent); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  .fb .fb-less.on { color: var(--note); border-color: var(--note); background: color-mix(in srgb, var(--note) 12%, transparent); }
+  .fb .fb-note.on { color: var(--accent); border-color: var(--accent); }
+  /* read button: lights with the same accent treatment as the other pills
+     (one-way — only a press activates it) */
+  .fb .fb-read.on { color: var(--accent); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  /* ask-an-AI popover: deep-links the card into your chosen chat subscription */
+  .askpop { display: flex; gap: 6px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+  .askpop .provider {
+    background: var(--chip); color: var(--text); border: 1px solid var(--border);
+    border-radius: 999px; padding: 0.22rem 0.85rem; font-size: 0.78rem; cursor: pointer; font-weight: 700;
+  }
+  .askpop .provider:hover { border-color: var(--accent); color: var(--accent); }
+  .askpop .hint { font-size: 11px; color: var(--muted); }
+  /* tell-your-algorithm note composer */
+  .notebox { display: flex; gap: 6px; margin-top: 8px; }
+  .notebox input {
+    flex: 1; background: var(--chip); border: 1px solid var(--border); color: var(--text);
+    border-radius: 999px; padding: 0.3rem 0.85rem; font-size: 0.8rem; font-family: inherit; outline: none;
+  }
+  .notebox input:focus { border-color: var(--accent); }
+  .notebox button {
+    background: var(--accent); color: #fff; border: 0; border-radius: 999px;
+    padding: 0.3rem 0.9rem; font-size: 0.78rem; font-weight: 700; cursor: pointer;
+  }
+
+  /* ---- algorithm panel (observability) ---- */
+  .algo { border-bottom: 1px solid var(--border); font-size: 13px; color: var(--muted); }
+  .algo summary { padding: 10px 16px; cursor: pointer; list-style: none; font-weight: 700; font-size: 12px; }
+  .algo summary::-webkit-details-marker { display: none; }
+  .algo summary .mark { color: var(--accent); }
+  .algo-body { padding: 2px 16px 14px; display: grid; gap: 14px; }
+  .algo h3 { font-size: 10.5px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); font-weight: 700; margin-bottom: 5px; }
+  .algo .dim { color: var(--muted); font-size: 12px; }
+  .algo b { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .hist { margin-top: 6px; max-width: 320px; }
+  .hrow { display: flex; align-items: center; gap: 8px; margin: 2px 0; }
+  .hlbl { width: 18px; text-align: right; font-size: 11px; font-variant-numeric: tabular-nums; }
+  .htrack { flex: 1; height: 6px; background: var(--chip); border-radius: 3px; overflow: hidden; }
+  .hfill { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+  .hn { width: 22px; font-size: 11px; font-variant-numeric: tabular-nums; }
+  .drop { margin: 4px 0; font-size: 12px; line-height: 1.4; }
+  .algo-actions { display: flex; gap: 6px; margin-top: 8px; }
+  .algo-actions button {
+    background: var(--chip); color: var(--text); border: 1px solid var(--border);
+    border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.75rem; cursor: pointer; font-weight: 600;
+  }
+  .note { color: var(--note); font-size: 13px; font-style: italic; margin-top: 8px; }
+  .note a.kb { color: var(--note); font-weight: 600; text-decoration: none; }
+  .note a.kb:hover { text-decoration: underline; }
+  .ig + .note-ig, .note-ig { margin: -4px 16px 12px; }
+  a.orig { color: inherit; text-decoration: none; display: block; }
+  .end { text-align: center; color: var(--muted); padding: 2.5rem 1rem 3rem; font-size: 0.9rem; }
+  .end::before { content: "◦ ◦ ◦"; display: block; letter-spacing: 0.5em; margin-bottom: 0.5rem; }
+  .end b { color: var(--text); }
+
+  /* ---- attention layer: keep me here, but only with signal ---- */
+  /* unseen-since-last-visit: the "unread" pull, but it resolves (finite), never nags */
+  .isnew { box-shadow: inset 3px 0 0 var(--accent); }
+  /* read cards recede quietly: a touch dimmer with a ✓ on the why-row; hovering
+     restores full contrast so rereading never fights the fade */
+  article.isread { opacity: 0.6; transition: opacity 0.8s ease; }
+  article.isread:hover, article.isread:focus-within { opacity: 1; }
+  .isread .why .whytext::after { content: "  ·  ✓ read"; color: var(--muted); white-space: nowrap; }
+  .newdot { display: inline-block; font-size: 9.5px; font-weight: 800; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; letter-spacing: 0.3px; }
+  .caughtup { text-align: center; color: var(--muted); font-size: 12px; padding: 1.1rem 1rem; display: flex; align-items: center; gap: 12px; }
+  .caughtup::before, .caughtup::after { content: ""; flex: 1; height: 1px; background: var(--border); }

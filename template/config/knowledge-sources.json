@@ -1,0 +1,16 @@
+{
+  "_comment": "Curated knowledge well, harvested per topic: Wikipedia intro searches, arXiv queries, and YouTube channel IDs (UC\u2026). Empty until the owner has a subject they want taught from authoritative sources rather than social feeds \u2014 e.g. a beginner ladder. Each topic: { \"match\": \"<the interest/boost name it serves>\", \"wikipedia\": [\"query\", \u2026], \"arxiv\": [\"query\", \u2026], \"youtube\": [\"UC\u2026\", \u2026] }.",
+  "wikipedia": {
+    "enabled": true,
+    "perQuery": 3
+  },
+  "arxiv": {
+    "enabled": false,
+    "perQuery": 5
+  },
+  "youtube": {
+    "enabled": true,
+    "perChannel": 4
+  },
+  "topics": {}
+}

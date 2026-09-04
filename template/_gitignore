@@ -1,0 +1,9 @@
+node_modules
+public/
+scratch/
+.env*
+!.env.example
+.vercel
+.DS_Store
+sweep.log
+*.log

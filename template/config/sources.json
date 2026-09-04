@@ -1,0 +1,5 @@
+{
+  "_comment": "Public sources `antifeed collect` reads every sweep. Hacker News front page (points floor) plus any RSS/Atom feeds. Add feeds that match the owner's profile — the setup interview is the time to ask. Blogs, newsletters, Substacks, and YouTube channel feeds (https://www.youtube.com/feeds/videos.xml?channel_id=UC…) all work.",
+  "hackernews": { "enabled": true, "minPoints": 80, "count": 30 },
+  "rss": []
+}

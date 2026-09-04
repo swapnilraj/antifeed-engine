@@ -1,0 +1,15 @@
+{
+  "name": "my-antifeed",
+  "private": true,
+  "scripts": {
+    "doctor": "antifeed doctor",
+    "collect": "antifeed collect",
+    "build": "antifeed build",
+    "publish-wall": "antifeed publish",
+    "validate": "antifeed build"
+  },
+  "dependencies": {
+    "@vercel/blob": "^2.6.1",
+    "antifeed": "github:swapnilraj/antifeed-engine#v1.0.1"
+  }
+}

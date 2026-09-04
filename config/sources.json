@@ -1,0 +1,29 @@
+{
+  "_comment": "External (non-social) sources the sweep harvests — no login, no ./gate.sh needed. Add RSS/Atom feed URLs to 'rss' (tell Claude e.g. 'add Simon Willison's blog to my RSS'). HN front page is filtered by minPoints; interest-driven HN searches are derived from algorithm/interests.md at run time, not listed here. Run: node collectors/sources.mjs all",
+  "hackernews": { "enabled": true, "minPoints": 100 },
+  "rss": [
+    "https://simonwillison.net/atom/everything/",
+    "https://importai.substack.com/feed",
+    "https://www.interconnects.ai/feed",
+    "https://www.thediff.co/feed",
+    "https://stratechery.com/feed/",
+    "https://chieftasteofficer.substack.com/feed",
+    "https://pudding.cool/rss.xml",
+    "https://informationisbeautiful.net/feed/",
+    "https://ourworldindata.org/atom.xml",
+    "https://andjelicaaa.substack.com/feed",
+    "https://www.honest-broker.com/feed",
+    "https://www.blackbirdspyplane.com/feed",
+    "https://kylechayka.substack.com/feed",
+    "https://culture.ghost.io/rss/",
+    "https://www.themarginalian.org/feed/",
+    "https://www.thisiscolossal.com/feed/",
+    "https://dirt.fyi/feed",
+    "https://www.pi.fyi/feed",
+    "https://www.are.na/blog/rss.xml",
+    "https://feeds.feedburner.com/itsnicethat",
+    "https://www.ft.com/markets?format=rss",
+    "https://www.ft.com/technology?format=rss",
+    "https://www.ft.com/companies?format=rss"
+  ]
+}

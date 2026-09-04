@@ -1,0 +1,40 @@
+// Personal six-week Openness Mode pilot. Runtime state stays private in
+// /api/openness; this file contains only the transparent intervention design.
+window.WALL_OPENNESS = {
+  version: 1,
+  durationDays: 42,
+  midpointDay: 21,
+  revisitAfterDays: 4,
+  revisitExpiresAfterDays: 7,
+  practiceAfter: 4,
+  revisitAfter: 9,
+  unreadDoseCap: 6,
+  success: { reflections: 12, practices: 4, categories: 3, meaningfulOutcomes: 6 },
+  survey: {
+    title: "Openness check-in",
+    source: "IPIP/BFAS Openness scale · public domain",
+    sourceUrl: "https://ipip.ori.org/BFASKeys.htm",
+    prompt: "Describe yourself as you generally are now, not as you wish to be.",
+    labels: ["Very inaccurate", "Moderately inaccurate", "Neither", "Moderately accurate", "Very accurate"],
+    items: [
+      { text: "Enjoy the beauty of nature.", key: "+" },
+      { text: "Believe in the importance of art.", key: "+" },
+      { text: "Love to reflect on things.", key: "+" },
+      { text: "Get deeply immersed in music.", key: "+" },
+      { text: "See beauty in things that others might not notice.", key: "+" },
+      { text: "Need a creative outlet.", key: "+" },
+      { text: "Do not like poetry.", key: "-" },
+      { text: "Seldom get lost in thought.", key: "-" },
+      { text: "Seldom daydream.", key: "-" },
+      { text: "Seldom notice the emotional aspects of paintings and pictures.", key: "-" },
+    ],
+  },
+  practices: [
+    { week: 1, title: "Prediction and surprise", prompt: "Choose an exploration card. Before revisiting it, state what you expected; then name the most important surprise." },
+    { week: 2, title: "Steelman the resistance", prompt: "Choose a credible view you resist. Write its strongest fair case and one piece of evidence that would change your mind." },
+    { week: 3, title: "Change the viewpoint", prompt: "Reframe one issue from another stakeholder's perspective. What becomes visible from there?" },
+    { week: 4, title: "Cross two domains", prompt: "Connect two exploration cards from different domains. State the analogy and where it breaks." },
+    { week: 5, title: "Run a small test", prompt: "Turn one idea into a small real-world experiment or creation you can complete this week." },
+    { week: 6, title: "Teach and retain", prompt: "Teach one idea that changed or deepened. Finish with an if-then rule that keeps the behavior alive." },
+  ],
+};

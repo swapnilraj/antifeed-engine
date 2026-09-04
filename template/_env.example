@@ -1,0 +1,12 @@
+# Copy to .env — everything here is optional for a local wall.
+# Setting up? Tell your agent "set this up" — it follows node_modules/antifeed/docs/setup.md.
+# Hosted wall (Vercel): its origin, and the machine token the sweep uses for
+# feedback / read-state sync. Set the same WALL_SYNC_TOKEN as a Vercel env var.
+WALL_URL=
+WALL_SYNC_TOKEN=
+# Optional: Cloudflare R2 for self-hosting Instagram reel video.
+R2_ACCOUNT_ID=
+R2_BUCKET=
+R2_PUBLIC_BASE=
+# Optional: Chromium/Brave remote-debugging port for X / Instagram collection.
+CDP_PORT=9222
