@@ -10,6 +10,6 @@
   },
   "dependencies": {
     "@vercel/blob": "^2.6.1",
-    "antifeed": "github:swapnilraj/antifeed-engine#v1.0.1"
+    "antifeed": "github:swapnilraj/antifeed-engine#v1.1.0"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "antifeed",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "antifeed — a feed ranked by an interest profile you write in markdown. Any coding agent (Claude Code, Codex, …) runs the sweep; this package is the deterministic engine around it.",
   "license": "MIT",
   "repository": "github:swapnilraj/antifeed-engine",

@@ -35,7 +35,7 @@ The sweep commits and pushes; Vercel redeploys. That's the loop — every later 
 **Local only (no Vercel):**
 
 ```bash
-npx github:swapnilraj/antifeed-engine#v1.1.0 init my-antifeed
+npx github:swapnilraj/antifeed-engine#v1.1.1 init my-antifeed
 cd my-antifeed && npm install && $EDITOR algorithm/interests.md
 claude                             # or: codex   → "run a sweep"
 npx antifeed build && open public/index.html
@@ -77,9 +77,10 @@ antifeed browser [--install]        # dedicated logged-in browser on the CDP por
 antifeed collect [--x-tab ID] [--instagram[=timeline,reels]]
 antifeed enrich-reels --input BUNDLE --ids ID,… --output BUNDLE
 antifeed dedup check <url> | grep <term>
-antifeed prepend <cards.json>       # validate + prepend kept cards
+antifeed prepend <cards.json>       # validate + prepend kept cards (each needs a shelf life)
+antifeed shelf status | todo | apply # shelf-life backfill for cards carded before v1.1.0
 antifeed localize-media | localize-video | localize-links
-antifeed archive                    # five-days-after-read rule (fails safe without read state)
+antifeed archive [--dry-run]        # read cards 5 days after first read; unread cards when their shelf life runs out (fails safe without read state)
 antifeed build                      # validate + build public/
 antifeed publish                    # archive + build; then commit & push
 ```
@@ -93,6 +94,11 @@ An instance depends on the engine as the `antifeed` package (`github:swapnilraj/
 without touching your `algorithm/`, `data/` or media. Pin a tag
 (`github:swapnilraj/antifeed-engine#v1.2.0`) if you want to choose when. A Vercel-hosted wall picks
 the new engine up on its next deploy.
+
+**v1.1.0 — shelf life.** Unread cards no longer stay forever: each card carries a shelf life
+(dated / news / analysis / evergreen) and leaves the wall unread when it runs out. Upgrading
+changes nothing for existing cards until they're labelled, and your sweep agent does that itself,
+a batch per sweep. Tune or switch it off in `config/shelf-life.json`; see `docs/shelf-life.md`.
 
 ## Layout
 
