@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Assemble the small static Vercel bundle. Collection, profiles, archives, and
 // private operating instructions never leave the machine.
-import { mkdirSync, copyFileSync, cpSync, existsSync } from "node:fs";
+import { mkdirSync, copyFileSync, cpSync, existsSync, readFileSync, writeFileSync } from "node:fs";
+import { loadShelfConfig } from "../core/shelf-config.mjs";
 import { loadItems, report } from "../core/validate-items.mjs";
 import { loadRuns, reportRuns } from "../core/validate-runs.mjs";
 import { loadLearning, reportLearning } from "../core/validate-learning.mjs";
@@ -31,8 +32,14 @@ mkdirSync(out("data"), { recursive: true });
 mkdirSync(out("web"), { recursive: true });
 
 // wall.html -> public/index.html; copy only the assets it references.
-copyFileSync(enginePath("wall.html"), out("index.html"));
-for (const asset of ["wall.css", "wall-renderers.js", "wall-state.js", "wall-read-tracker.js", "wall-media.js", "wall-feedback.js", "wall-learning-template.js", "wall-learning-schedule.js", "wall-learning.js", "wall-openness-model.js", "wall-openness.js", "wall-app.js"])
+// The instance's shelf-life config is inlined ahead of the shared model so the
+// feed's chips and weighting match what the archive step enforces.
+const shelfTag = '<script src="web/wall-shelf-life.js"></script>';
+const html = readFileSync(enginePath("wall.html"), "utf8");
+if (!html.includes(shelfTag)) throw new Error("wall.html no longer loads web/wall-shelf-life.js");
+writeFileSync(out("index.html"), html.replace(shelfTag,
+  `<script>window.WALL_SHELF_CONFIG = ${JSON.stringify(loadShelfConfig()).replace(/</g, "\\u003c")};</script>\n${shelfTag}`));
+for (const asset of ["wall.css", "wall-renderers.js", "wall-state.js", "wall-read-tracker.js", "wall-media.js", "wall-feedback.js", "wall-learning-template.js", "wall-learning-schedule.js", "wall-learning.js", "wall-shelf-life.js", "wall-openness-model.js", "wall-openness.js", "wall-app.js"])
   copyFileSync(enginePath("web", asset), out("web", asset));
 copyFileSync(instancePath("data", "items.js"), out("data", "items.js"));
 copyFileSync(instancePath("data", "runs.js"), out("data", "runs.js"));

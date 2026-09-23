@@ -28,6 +28,8 @@
         // one-way: only an actual press lights the ✓, never dwell/engage/synced reads
         el.querySelector(".fb-read")?.classList.toggle("on", Wall.state.wasPressed(el.dataset.id));
       });
+      feed.querySelectorAll(".shelf-chip").forEach(el =>
+        el.classList.toggle("on", !!live(store[`${el.dataset.id}#shelf`])));
       const count = Object.values(store).filter(live).length;
       const countEl = document.getElementById("fbcount");
       if (countEl) countEl.textContent = count
@@ -47,7 +49,7 @@
       ].filter(Boolean).join("\n\n"));
     }
 
-    const closePanels = except => feed.querySelectorAll(".askpop, .notebox").forEach(el => {
+    const closePanels = except => feed.querySelectorAll(".askpop, .notebox, .shelfpop").forEach(el => {
       if (el !== except) el.remove();
     });
 
@@ -99,7 +101,45 @@
       input.focus();
     }
 
+    // Shelf-life correction: "keep longer" (it's evergreen) or "already stale".
+    // A signal like any other — the next sweep rewrites the card's shelf and
+    // logs the correction; tapping the chosen option again clears it.
+    const SHELF_CHOICES = [["evergreen", "keep longer — it's evergreen"], ["stale", "already stale"]];
+    function toggleShelf(chip, item) {
+      const host = chip.closest(".why");
+      const open = host.nextElementSibling?.matches(".shelfpop") ? host.nextElementSibling : null;
+      closePanels(open);
+      if (open) return open.remove();
+      const key = `${item.id}#shelf`;
+      const current = live(fbLoad()[key])?.life;
+      const panel = document.createElement("div");
+      panel.className = "askpop shelfpop";
+      panel.innerHTML = SHELF_CHOICES.map(([life, label]) =>
+        `<button class="provider${current === life ? " on" : ""}" data-life="${life}">${esc(label)}</button>`).join("")
+        + `<span class="hint">${esc(item.shelf?.reason || "")}</span>`;
+      panel.addEventListener("click", event => {
+        const button = event.target.closest("[data-life]");
+        if (!button) return;
+        const store = fbLoad();
+        const at = new Date().toISOString();
+        store[key] = live(store[key])?.life === button.dataset.life
+          ? { removed: true, at }
+          : { kind: "shelf", life: button.dataset.life, at };
+        readTracker.markExplicit(item.id);
+        fbSave(store);
+        paint();
+        syncFb(true);
+        panel.remove();
+      });
+      host.after(panel);
+    }
+
     feed.addEventListener("click", event => {
+      const chip = event.target.closest(".shelf-chip");
+      if (chip) {
+        event.preventDefault();
+        return toggleShelf(chip, itemById[chip.dataset.id] || { id: chip.dataset.id });
+      }
       const button = event.target.closest(".fb button");
       if (!button) return;
       event.preventDefault();

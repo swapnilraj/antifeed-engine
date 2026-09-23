@@ -4,6 +4,7 @@
 //
 // State shape: { signals: { "<item id>":       { dir: "more"|"less", at: ISO },
 //                           "<item id>#note":  { kind: "note", text, at: ISO },
+//                           "<item id>#shelf": { kind: "shelf", life: "evergreen"|"stale", at: ISO },
 //                           "<any key>":       { removed: true, at: ISO } },
 //                processedAt: ISO|null }
 //
@@ -46,19 +47,24 @@ function prune(state) {
   return state;
 }
 
-// Three signal shapes: a ± tap { dir, at } (keyed by item id), a free-text
-// note { kind:"note", text, at } (keyed "<item id>#note"), and a deletion
-// tombstone { removed: true, at }. Notes are Swapnil's plain-language tuning
-// instructions, actioned by Claude into algorithm/; sweeps IGNORE tombstones.
+// Four signal shapes: a ± tap { dir, at } (keyed by item id), a free-text
+// note { kind:"note", text, at } (keyed "<item id>#note"), a shelf-life
+// correction { kind:"shelf", life:"evergreen"|"stale", at } (keyed
+// "<item id>#shelf"), and a deletion tombstone { removed: true, at }. Notes are
+// Swapnil's plain-language tuning instructions, actioned by Claude into
+// algorithm/; sweeps IGNORE tombstones.
 const validSignal = f => f && typeof f.at === "string" &&
   (f.dir === "more" || f.dir === "less" || f.removed === true ||
-   (f.kind === "note" && typeof f.text === "string" && f.text.trim().length > 0));
+   (f.kind === "note" && typeof f.text === "string" && f.text.trim().length > 0) ||
+   (f.kind === "shelf" && (f.life === "evergreen" || f.life === "stale")));
 
 const storedShape = f => f.removed === true
   ? { removed: true, at: f.at }
   : f.kind === "note"
     ? { kind: "note", text: String(f.text).slice(0, 500), at: f.at }
-    : { dir: f.dir, at: f.at };
+    : f.kind === "shelf"
+      ? { kind: "shelf", life: f.life, at: f.at }
+      : { dir: f.dir, at: f.at };
 
 export default async function handler(req, res) {
   const state = prune(await load());

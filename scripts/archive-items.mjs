@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 // Reconcile the deployed wall against authoritative first-read timestamps.
-// A card stays active until five full days after its first read; unread cards
-// never age out. Existing count-based archives are reconciled by the same rule,
-// so unread/recently-read cards are restored to the wall.
+// A card stays active until five full days after its first read; an unread card
+// stays until its shelf life runs out (web/wall-shelf-life.js — cards without a
+// shelf never age out). Existing archives are reconciled by the same rule, so
+// unread-and-unexpired or recently-read cards are restored to the wall.
 //
 // Usage: node scripts/archive-items.mjs [--dry-run] [--reads PATH] [--now ISO]
 import { existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
@@ -11,6 +12,7 @@ import { readArchivePartition, READ_GRACE_DAYS } from "../core/read-archive.mjs"
 import { loadItems, validate } from "../core/validate-items.mjs";
 import { saveItems } from "../core/items-store.mjs";
 import { instancePath, WALL_URL } from "../core/paths.mjs";
+import { loadShelfConfig, unshelvedNotice } from "../core/shelf-config.mjs";
 
 const itemsFile = instancePath("data", "items.js");
 const archiveDir = instancePath("data", "archive") + "/";
@@ -90,20 +92,32 @@ try {
 if (!state || !state.reads || typeof state.reads !== "object" || Array.isArray(state.reads))
   throw new Error("read state must contain { reads: { id: ISO } }");
 
+const shelf = loadShelfConfig();
 const files = archiveFiles();
 const live = loadItems(itemsFile);
 const previouslyArchived = files.flatMap(name =>
   JSON.parse(readFileSync(`${archiveDir}${name}`, "utf8")));
 const corpus = [...new Map([...live, ...previouslyArchived].map(item => [item.id, item])).values()];
-const { active, archived, cutoff } = readArchivePartition(corpus, state.reads, { now });
+const { active, archived, expired, cutoff } = readArchivePartition(corpus, state.reads, { now });
 const liveIds = new Set(live.map(item => item.id));
 const oldArchiveIds = new Set(previouslyArchived.map(item => item.id));
 const restored = active.filter(item => !liveIds.has(item.id)).length;
 const newlyArchived = archived.filter(item => !oldArchiveIds.has(item.id)).length;
 
 console.log(`${corpus.length} total cards → ${active.length} active, ${archived.length} archived`);
-console.log(`rule: first read on or before ${cutoff} (${READ_GRACE_DAYS} full days)`);
+console.log(`rule: first read on or before ${cutoff} (${READ_GRACE_DAYS} full days)` + (shelf.expireUnread
+  ? `; unread past shelf life (news ${shelf.days.news}d, analysis ${shelf.days.analysis}d, evergreen ${shelf.days.evergreen}d, dated by until)`
+  : "; unread cards never expire (config/shelf-life.json expireUnread: false)"));
 console.log(`${restored} restored from old count-based archives, ${newlyArchived} newly eligible`);
+const newlyExpired = expired.filter(item => !oldArchiveIds.has(item.id));
+if (expired.length) {
+  const byLife = {};
+  for (const item of newlyExpired) byLife[item.shelf.life] = (byLife[item.shelf.life] || 0) + 1;
+  const breakdown = Object.entries(byLife).map(([life, count]) => `${count} ${life}`).join(", ");
+  console.log(`shelf life: ${newlyExpired.length} unread card(s) newly expired${breakdown ? ` (${breakdown})` : ""}, ${expired.length} expired in total`);
+}
+const unshelved = active.filter(item => !item.shelf && !state.reads[item.id]).length;
+if (shelf.expireUnread && unshelved) console.log(`note: ${unshelvedNotice(unshelved)}`);
 if (dryRun) process.exit(0);
 
 // Two-phase reconciliation keeps every card recoverable if the process is

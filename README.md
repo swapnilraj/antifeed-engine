@@ -35,7 +35,7 @@ The sweep commits and pushes; Vercel redeploys. That's the loop — every later 
 **Local only (no Vercel):**
 
 ```bash
-npx github:swapnilraj/antifeed-engine#v1.0.2 init my-antifeed
+npx github:swapnilraj/antifeed-engine#v1.1.0 init my-antifeed
 cd my-antifeed && npm install && $EDITOR algorithm/interests.md
 claude                             # or: codex   → "run a sweep"
 npx antifeed build && open public/index.html

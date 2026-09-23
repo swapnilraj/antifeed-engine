@@ -389,6 +389,17 @@ async function doctor() {
   }
   try { await node("core/validate-items.mjs"); await node("core/validate-runs.mjs"); await node("core/validate-learning.mjs"); await node("core/validate-openness.mjs"); ok("data files validate"); }
   catch (e) { bad("data validation", e.message.split("\n")[0]); }
+  if (existsSync(instancePath("data", "items.js"))) {
+    try {
+      const [{ loadShelfConfig, unshelvedNotice }, { loadItems }] = await Promise.all([
+        import("./core/shelf-config.mjs"), import("./core/validate-items.mjs")]);
+      const shelf = loadShelfConfig();
+      const unshelved = shelf.expireUnread ? loadItems(instancePath("data", "items.js")).filter(item => !item.shelf).length : 0;
+      if (!shelf.expireUnread) warn("shelf life off", "unread cards never expire (config/shelf-life.json)");
+      else if (unshelved) warn("shelf-life backlog", unshelvedNotice(unshelved, { unread: false }));
+      else ok("shelf life", `every card labelled; unread expiry after news ${shelf.days.news}d, analysis ${shelf.days.analysis}d, evergreen ${shelf.days.evergreen}d`);
+    } catch (e) { warn("shelf life", `couldn't check (${e.message.split("\n")[0]})`); }
+  }
   if (WALL_URL && process.env.WALL_SYNC_TOKEN) {
     try {
       const r = await fetch(`${WALL_URL}/api/reads`, { headers: { authorization: `Bearer ${process.env.WALL_SYNC_TOKEN}` }, signal: AbortSignal.timeout(8000) });
@@ -421,6 +432,7 @@ try {
   else if (command === "localize-links") await nodeLive("scripts/localize-link-media.mjs", args);
   else if (command === "dedup") await nodeLive("core/dedup.mjs", args);
   else if (command === "prepend") await nodeLive("core/items-store.mjs", ["prepend", ...args]);
+  else if (command === "shelf") await nodeLive("scripts/shelf.mjs", args);
   else if (command === "openness-report") await nodeLive("scripts/openness-report.mjs", args);
   else if (command === "archive") await archive();
   else if (command === "build") await build();
@@ -435,6 +447,7 @@ try {
       "       antifeed doctor                                           (check the instance + optional integrations)\n" +
       "       antifeed browser [--browser PATH] [--print|--install|--uninstall]   (dedicated logged-in browser on the CDP port; --install keeps it alive at login)\n" +
       "       antifeed prompt                                           (print the sweep kickoff prompt for any agent)\n" +
+      "       antifeed shelf status | todo [--limit N] [--output PATH] | apply <labels.json>   (shelf-life backfill for older cards)\n" +
       "       antifeed collect [--x-tab ID] [--instagram[=timeline,reels]] [--ig-amount N] [--ig-rounds N] [--rounds N] [--output PATH]\n" +
       "       antifeed enrich-reels --input PATH [--ids ID,...] [--limit N] [--output PATH]\n" +
       "       antifeed localize-media [--refresh] [id ...]     (IG gate open; covers, carousel slides, avatars)\n" +

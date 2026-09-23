@@ -3,8 +3,8 @@
 An antifeed is a feed whose ranking algorithm is a markdown file the owner writes. You are the
 sweep: harvest broadly, rank against the owner's explicit profile, keep only high-signal items,
 explain every inclusion, and (if configured) preserve the knowledge base. The wall has no count
-cap: a post is archived only once its authoritative first-read timestamp is at least five full
-days old; unread posts stay active indefinitely.
+cap: a post is archived once its authoritative first-read timestamp is at least five full days
+old, or — while unread — once its per-card shelf life runs out (`shelf`, set at carding time).
 
 This file is engine-owned and generic. Owner-specific rules live in the instance's own
 `AGENTS.md` (which points here) and accumulate in `algorithm/feedback-log.md`. The instance is
@@ -77,6 +77,15 @@ the current directory (`WALL_HOME`); `antifeed …` below means `npx antifeed �
     gallery) and, if R2 is configured, `antifeed localize-video` so every kept reel carries a `video`
     field (a cover-only reel that links out is a defect; if video can't be hosted, drop the reel).
     Separately, `antifeed localize-links` gives link/RSS/HN keepers their article's lead image.
+10a. Shelf-life backfill (walls carded before shelf life existed). Run `antifeed shelf status`; if
+    cards still lack a `shelf`, label ONE batch this sweep: `antifeed shelf todo --output <file>`
+    (≤150, oldest-carded first), judge each card from its text by the card-contract rules, write
+    `{ "<id>": { life, until?, reason } }` and run `antifeed shelf apply <labels.json>`. One batch
+    per sweep, never the whole backlog: it keeps each sweep bounded and spreads the archive out.
+    Before publishing, `antifeed archive --dry-run` and put the number of cards the batch will
+    expire (by life) plus how many remain unlabelled in the run notes and report — cards leave the
+    wall, so the owner must be able to see it happened. Skip when shelf life is off
+    (`expireUnread: false`) or nothing is left; the owner may also say to stop.
 11. If `WALL_OBSIDIAN_VAULT` is set, write the knowledge-base notes (contract below) before
     publishing. Otherwise skip this step and leave `kbNote` unset.
 12. Prepend a complete entry to `data/runs.js`.
@@ -97,6 +106,14 @@ the current directory (`WALL_HOME`); `antifeed …` below means `npx antifeed �
 - Lead with the stakes, the surprising fact, or a useful curiosity gap, then deliver the substance.
 - Instagram cards set `kind` to `reel`, `photo`, or `carousel`; reel summaries reflect caption,
   transcript, and visual evidence, never alt text alone.
+- Every card carries `shelf: { life, until?, reason }` — how long it stays worth showing unread,
+  judged from what the piece is, not its category: `dated` (a real end date — event, booking
+  window, market call; `until` = last useful day, required), `news` (a take on something that just
+  happened; 14 days), `analysis` (explainer of a current situation; 45 days), `evergreen` (ideas,
+  history, science, craft; 120-day ceiling). Days count from `collectedAt`; any `until` wins.
+  When unsure, use `analysis`. `reason` is one line starting with the life, e.g.
+  `"news: OECD bond-yield warning, stale once yields move"`. Durations are the instance's
+  `config/shelf-life.json`; if it sets `expireUnread: false`, skip labelling. See `docs/shelf-life.md`.
 - Exploration picks carry `exploration: { kind, bridge }` (`adjacent` | `wildcard` |
   `counterpoint`; a counterpoint also names its `credibility`) so the owner can graduate or
   retire a territory with one tap.
@@ -121,6 +138,8 @@ the current directory (`WALL_HOME`); `antifeed …` below means `npx antifeed �
   count or age. Never commit an invalid or unbuilt release; `antifeed build` validates alone.
 - Deploys come from pushing `main` to a GitHub-connected Vercel project, not from the Vercel CLI.
 - If a gate was opened, confirm it is closed before declaring completion.
+- Report shelf-life archiving when it happened: unread cards expired by life, and any backfill
+  batch labelled with how many cards remain unlabelled.
 - Report seen vs kept, the score distribution, top themes, weak or empty interests, exploration
   picks (or which directions came up dry), and boosts past their review date. Never retire a
   boost without the owner's decision.
@@ -143,6 +162,7 @@ the current directory (`WALL_HOME`); `antifeed …` below means `npx antifeed �
 - `reels.md` — caption, transcript, and frame enrichment; media localization
 - `market-theses.md` — fact-checked synthesis and financial guardrails
 - `feedback-and-private-imports.md` — wall feedback, read-state, data exports, LLM memory
+- `shelf-life.md` — unread expiry: labels, tuning/opt-out, upgrading an existing wall
 - `learning-tracks.md` — defining adaptive retrieval tracks
 - `openness-experiment.md` — the opt-in exploration experiment
 - `deployment.md` — local and Vercel viewing, validation, recovery

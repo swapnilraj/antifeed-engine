@@ -1,0 +1,9 @@
+{
+  "_comment": "How long an UNREAD card stays on the wall, by its per-card shelf life (set by the sweep; see AGENTS.md card contract). Days count from the card's collectedAt; a card's own `until` date always wins. Set expireUnread to false to keep the original rule (unread cards never leave; the sweep then skips shelf labelling). Preview any change with: antifeed archive --dry-run",
+  "expireUnread": true,
+  "days": {
+    "news": 14,
+    "analysis": 45,
+    "evergreen": 120
+  }
+}

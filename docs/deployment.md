@@ -8,9 +8,10 @@ Prepare a release locally with the unified command:
 node wall.mjs publish
 ```
 
-It pulls authoritative first-read timestamps, archives only cards read at least
-five full days ago, validates cards, run logs, and adaptive learning tracks, then
-builds `public/`. Unread cards never age out, regardless of feed length.
+It pulls authoritative first-read timestamps, archives cards read at least five
+full days ago plus unread cards whose shelf life has run out (`web/wall-shelf-life.js`;
+cards without a `shelf` never expire), validates cards, run logs, and adaptive
+learning tracks, then builds `public/`.
 If that succeeds, deploy through the connected GitHub integration:
 
 ```bash
@@ -47,10 +48,12 @@ node wall.mjs archive
 ```
 
 The command reads `/api/reads` using `WALL_SYNC_TOKEN` (from the instance `.env`, or the local, gitignored
-`.env.sync`). A card is eligible only when its first-read timestamp is at least
-120 hours old. If read state cannot be loaded, it fails safe by leaving every
-card active. Existing count-based archives are reconciled too, restoring any
-unread or recently-read cards to the wall.
+`.env.sync`). A read card is eligible once its first-read timestamp is at least
+120 hours old; an unread card once its shelf life has run out (dated: the day
+after `until`; news 14, analysis 45, evergreen 120 days from `collectedAt`). If
+read state cannot be loaded, it fails safe by leaving every card active — unread
+can't be told from read. Existing archives are reconciled too, restoring any
+unexpired unread or recently-read cards to the wall.
 
 ## Recovery notes
 

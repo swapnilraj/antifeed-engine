@@ -56,9 +56,20 @@
   const fb = i => i.id
     ? `<span class="fb" data-id="${esc(i.id)}"><button class="fb-ask" title="ask an AI about this">✦</button><button class="fb-note" title="tell your algorithm">✎</button><button class="fb-more" title="more like this">＋</button><button class="fb-less" title="less like this">－</button><button class="fb-read" title="mark read">✓</button></span>`
     : "";
+  // shelf-life chip: how long this card stays on the wall unread; tapping it
+  // opens the "keep longer / already stale" correction (wall-feedback.js).
+  const shelfChip = i => {
+    const shelf = i.shelf, expires = Wall.shelfLife?.expiresAt(i);
+    if (!shelf || expires == null) return "";
+    const days = Math.max(0, Math.ceil((expires - Date.now()) / 864e5));
+    const label = shelf.until
+      ? `until ${new Date(`${shelf.until}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })}`
+      : `${shelf.life} · ${days}d`;
+    return ` <button class="shelf-chip" data-id="${esc(i.id)}" title="${esc(shelf.reason || "")} — tap to correct">${esc(label)}</button>`;
+  };
   const why = (i, cls) => `<div class="why ${cls || ""}"><span class="whytext">${
     i.why ? `<span class="mark">✦</span> ${esc(i.why)}${i.score != null ? ` · <b>${esc(String(i.score))}/10</b>` : ""}` : ""
-  }</span>${fb(i)}</div>`;
+  }${shelfChip(i)}</span>${fb(i)}</div>`;
 
   const timeOf = i => esc(i.postedAt || i.collectedAt);
   const categoryPill = i => i.category ? `<span class="catpill">${esc(i.category)}</span>` : "";

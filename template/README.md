@@ -6,7 +6,7 @@
 > (ask if unclear; a new folder called `antifeed` is a fine default):
 >
 > 1. Read the full playbook first: <https://raw.githubusercontent.com/swapnilraj/antifeed-engine/main/docs/setup.md>
-> 2. Create the instance: `npx -y github:swapnilraj/antifeed-engine#v1.0.2 init antifeed && cd antifeed && npm install`
+> 2. Create the instance: `npx -y github:swapnilraj/antifeed-engine#v1.1.0 init antifeed && cd antifeed && npm install`
 >    (or, if they already cloned this repo: `npm install` in it). The playbook is then also at
 >    `node_modules/antifeed/docs/setup.md`, and `AGENTS.md` in the instance points at the engine contract.
 > 3. Follow the playbook end to end. It is written for you: exact commands, an `npx antifeed doctor`

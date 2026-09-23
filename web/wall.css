@@ -297,6 +297,13 @@
   /* read button: lights with the same accent treatment as the other pills
      (one-way — only a press activates it) */
   .fb .fb-read.on { color: var(--accent); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  /* shelf-life chip: how long the card stays unread; tap to correct */
+  .shelf-chip {
+    background: none; border: 1px solid var(--border); color: var(--muted); font: inherit; font-size: 0.72rem;
+    border-radius: 999px; padding: 0 0.5rem; margin-left: 4px; cursor: pointer; white-space: nowrap;
+  }
+  .shelf-chip:hover { border-color: var(--muted); color: var(--text); }
+  .shelf-chip.on, .shelfpop .provider.on { color: var(--accent); border-color: var(--accent); }
   /* ask-an-AI popover: deep-links the card into your chosen chat subscription */
   .askpop { display: flex; gap: 6px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
   .askpop .provider {

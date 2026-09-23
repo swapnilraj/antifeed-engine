@@ -119,14 +119,24 @@
   });
   const readsReady = pullReads();
 
-  // per-visit shuffle key, fixed at load so scrolling/filtering never reorders
-  const shuffleRank = new Map(items.map(i => [i.id, Math.random()]));
+  // per-visit shuffle key, fixed at load so scrolling/filtering never reorders.
+  // Weighted by shelf life left (Efraimidis–Spirakis: key = u^(1/w), highest
+  // first): a fresh card has weight 1, one at the end of its shelf life 0.25, so
+  // old unread cards still surface — just less often than today's. Cards
+  // without a shelf keep weight 1 (plain shuffle).
+  const shelfLife = Wall.shelfLife;
+  const loadedAt = Date.now();
+  const shuffleRank = new Map(items.map(i => {
+    const left = shelfLife ? shelfLife.remaining(i, loadedAt) : null;
+    const weight = left == null ? 1 : 0.25 + 0.75 * left;
+    return [i.id, Math.random() ** (1 / weight)];
+  }));
   // unread (as of load) first & shuffled; read below, kept newest-first (stable sort)
   const ordered = items.slice().sort((a, b) => {
     const ra = wasRead(a.id), rb = wasRead(b.id);
     if (ra !== rb) return ra ? 1 : -1;                                  // unread before read
     if (ra) return 0;                                                   // both read → keep newest-first
-    return (shuffleRank.get(a.id) ?? 0) - (shuffleRank.get(b.id) ?? 0); // both unread → shuffle
+    return (shuffleRank.get(b.id) ?? 0) - (shuffleRank.get(a.id) ?? 0); // both unread → weighted shuffle
   });
 
   // unseen-since-last-visit: which ids are new to *this* visitor (localStorage)
@@ -181,6 +191,7 @@
         const it = byId[id];
         const card = it ? ` — "${(it.text || "").slice(0, 80)}" [${it.category}${it.why ? `; ${it.why}` : ""}]` : "";
         if (f.kind === "note") return `✎ note on ${id}: "${f.text}"${card}`;
+        if (f.kind === "shelf") return `⧗ shelf on ${id}: ${f.life === "stale" ? "already stale" : "keep longer (evergreen)"}${card}`;
         return `${f.dir === "more" ? "+" : "-"} ${f.dir} like ${id}${card}`;
       });
     return `wall feedback (${new Date().toISOString().slice(0, 16)})\n${lines.join("\n")}`;

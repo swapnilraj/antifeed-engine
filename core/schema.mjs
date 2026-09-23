@@ -1,6 +1,8 @@
 // Canonical item schema for collection, validation, and publishing.
 // The browser derives filter values from the data, so it does not need a second
 // copy of these enums.
+import shelfLife from "../web/wall-shelf-life.js";
+
 export const SOURCES = ["twitter", "instagram", "hackernews", "rss", "ft", "wikipedia", "arxiv", "youtube", "thesis", "link"];
 export const CATEGORIES = ["ai", "crypto", "markets", "engineering", "events", "ideas", "fun", "meta"];
 const STAT_KEYS = ["replies", "reposts", "likes", "views"];
@@ -45,6 +47,18 @@ const explorationObject = value => {
   if (value.kind === "counterpoint" && (!isString(value.credibility) || !value.credibility.trim()))
     return "counterpoint credibility must be a non-empty string";
   if ("credibility" in value && !isString(value.credibility)) return "credibility must be a string";
+  return null;
+};
+
+const shelfObject = value => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return "must be an object";
+  const allowed = new Set(["life", "until", "reason"]);
+  for (const key of Object.keys(value))
+    if (!allowed.has(key)) return `has unknown key "${key}" (allowed: ${[...allowed].join(", ")})`;
+  if (!shelfLife.LIVES.includes(value.life)) return `life must be one of ${shelfLife.LIVES.join(" | ")}`;
+  if ("until" in value && isoDate(value.until)) return `until ${isoDate(value.until)}`;
+  if (value.life === "dated" && !("until" in value)) return 'a "dated" shelf needs until (its last useful day)';
+  if (!isString(value.reason) || !value.reason.trim()) return "reason must be a non-empty string";
   return null;
 };
 
@@ -109,6 +123,7 @@ export const ITEM_SCHEMA = {
   why:         { required: false, check: nonEmptyStr,    desc: "the one-line match reason", example: "matched 'Compute & AI economics' [w4]" },
   via:         { required: false, check: nonEmptyStr,    desc: "how it was found", example: "for-you" },
   exploration: { required: false, check: explorationObject, desc: "structured openness-pilot provenance", example: { kind: "adjacent", bridge: "Connects nuclear physics to materials science." } },
+  shelf:       { required: false, check: shelfObject,    desc: "how long the card stays worth showing unread: life dated|news|analysis|evergreen (unread expiry after the end date | 14 | 45 | 120 days from collectedAt by default — config/shelf-life.json), until = last useful day (required for dated), reason = one line", example: { life: "news", reason: "news: OECD bond-yield warning, stale once yields move" } },
   collectedAt: { required: false, check: isoDate,        desc: "the collection date", example: "2026-07-18" },
   kbNote:      { required: false, check: mdPath,         desc: "the Obsidian vault path", example: "Social Wall/Posts/2026-07-18 io.net - AI compute.md" },
 };

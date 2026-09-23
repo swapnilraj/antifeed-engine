@@ -23,7 +23,7 @@ working; run it after every step.
 Either the owner already cloned their repo (Deploy-button path), or create one:
 
 ```bash
-npx github:swapnilraj/antifeed-engine#v1.0.2 init my-antifeed && cd my-antifeed
+npx github:swapnilraj/antifeed-engine#v1.1.0 init my-antifeed && cd my-antifeed
 npm install
 cp .env.example .env
 npx antifeed doctor     # expect: ✗ interest profile is empty — that's step 2

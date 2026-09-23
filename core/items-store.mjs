@@ -16,6 +16,7 @@ import { readFileSync, writeFileSync, existsSync, realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { loadItems, validate } from "./validate-items.mjs";
 import { instancePath } from "./paths.mjs";
+import { loadShelfConfig } from "./shelf-config.mjs";
 export { loadItems } from "./validate-items.mjs";
 
 const ITEMS_FILE = instancePath("data", "items.js");
@@ -70,6 +71,16 @@ if (isMain) {
     const cards = JSON.parse(readFileSync(arg, "utf8"));
     if (!Array.isArray(cards) || !cards.length)
       throw new Error(`${arg} must be a non-empty JSON array of cards`);
+    // New cards must say how long they stay worth showing unread (AGENTS.md card
+    // contract) unless the instance turned unread expiry off; the schema keeps
+    // it optional so older walls stay valid.
+    const unshelved = cards.filter(card => !card?.shelf).map(card => card?.id ?? "?");
+    if (unshelved.length && loadShelfConfig().expireUnread)
+      throw new Error(`every new card needs a shelf { life, until?, reason } — missing on: ${unshelved.join(", ")} (or set expireUnread: false in config/shelf-life.json)`);
+    // The shelf-life clock runs from collectedAt; stamp it so a card never falls
+    // back to its content's publish date.
+    const today = new Date().toISOString().slice(0, 10);
+    for (const card of cards) if (card && !card.collectedAt) card.collectedAt = today;
     const saved = updateItems(items => [...cards, ...items]);
     console.log(`prepended ${cards.length} card(s) — ${saved.length} active items. Run: npm run validate && npm run build`);
   } else {

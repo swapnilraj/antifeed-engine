@@ -34,5 +34,5 @@ A finite morning digest could link the best 3–5 cards back to the wall. It sho
 - Hacker News, RSS, Wikipedia, arXiv, and curated YouTube are active sources, not roadmap items.
 - Obsidian note creation is an active required output.
 - Dedicated adaptive quiz cards use a reusable parameterized topic template; nuclear basics is the first active track, with cross-device attempts and spaced retrieval.
-- Monthly archives retain cards once they are five days past their first read; unread cards stay on the wall.
+- Monthly archives retain cards once they are five days past their first read, or once an unread card's shelf life runs out.
 - Vercel is the supported private remote/phone delivery path; the old phone artifact is removed.

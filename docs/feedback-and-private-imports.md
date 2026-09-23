@@ -15,6 +15,7 @@ A signal of shape `{ "removed": true, "at": … }` is a deletion tombstone (a to
 - More: strengthen a matching interest/keyword or consider the author as an exemplar.
 - Less: weaken the interest, refine keywords, or add a mute when the intent is categorical.
 - Written note: treat as the authoritative plain-language instruction; it may also request a card correction or answer.
+- Shelf correction (`<id>#shelf`, `{ kind: "shelf", life: "evergreen" | "stale" }`): rewrite that card's `shelf` through `core/items-store.mjs` — `evergreen` sets `life: "evergreen"` (drop any `until`); `stale` sets `until` to yesterday so the next archive retires it — and update its `reason`. If a pattern emerges (e.g. a source's cards keep being marked stale), raise it and log it; one tap is a card fix, not a profile change.
 
 Update `algorithm/interests.md` or `algorithm/boosts.md`, then append the quoted request and exact change to `algorithm/feedback-log.md`. Only after changes land, mark through the newest processed timestamp:
 
