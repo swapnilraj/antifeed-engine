@@ -60,14 +60,16 @@
         score: typeof item.score === "number" ? item.score : null,
         by, at: new Date().toISOString(),
       });
-      if (!eventTimer) eventTimer = setTimeout(flushEvents, 4000);
+      if (!eventTimer) eventTimer = setTimeout(flushEvents, 60000);   // each flush = a Blob write; see wall-state.js
     }
-    window.addEventListener("pagehide", () => {
+    function beaconEvents() {
       if (!onHttp() || !pendingEvents.length) return;
       const batch = pendingEvents;
       pendingEvents = [];
       try { navigator.sendBeacon(EVENT_ENDPOINT, new Blob([JSON.stringify({ events: batch })], { type: "application/json" })); } catch {}
-    });
+    }
+    window.addEventListener("pagehide", beaconEvents);
+    document.addEventListener("visibilitychange", () => { if (document.hidden) beaconEvents(); });
 
     const pageIsAttended = () => document.visibilityState === "visible" && document.hasFocus();
 

@@ -82,7 +82,9 @@
   function scheduleReadPush(id, at = new Date().toISOString()) {
     if (!onHttp()) return;
     pendingReads[id] = at;
-    if (!readTimer) readTimer = setTimeout(flushReads, 4000);
+    // 60s, not 4s: every flush is a Blob get+put, and Hobby Blob caps writes
+    // (~2k/month). The hidden/pagehide beacon below catches whatever is pending.
+    if (!readTimer) readTimer = setTimeout(flushReads, 60000);
   }
   // Pull the server read set once at load and fold it into local read-state, so
   // a card read on another device is already "read" on your NEXT visit here.
@@ -109,14 +111,17 @@
       return readTimes;
     } catch { return readTimes; }
   }
-  // On unload, beacon whatever is still pending — the debounce timer may never fire.
-  addEventListener("pagehide", () => {
+  // On unload or tab-hide, beacon whatever is still pending — the debounce timer
+  // may never fire (mobile often skips pagehide, so visibilitychange covers it).
+  function beaconReads() {
     if (!onHttp()) return;
     const batch = pendingReads;
     pendingReads = Object.create(null);
     if (!Object.keys(batch).length) return;
     try { navigator.sendBeacon(READ_ENDPOINT, new Blob([JSON.stringify({ reads: batch })], { type: "application/json" })); } catch {}
-  });
+  }
+  addEventListener("pagehide", beaconReads);
+  document.addEventListener("visibilitychange", () => { if (document.hidden) beaconReads(); });
   const readsReady = pullReads();
 
   // per-visit shuffle key, fixed at load so scrolling/filtering never reorders.
