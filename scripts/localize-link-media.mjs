@@ -8,7 +8,7 @@
 // closes that gap deterministically: for each target card it fetches the
 // article, reads og:image / twitter:image, downloads the bytes to
 // media/link/<id>.<ext>, and repoints the card via the items store. The build
-// step copies media/ into public/, so nothing hotlinks (article images move,
+// step copies active cards' media into public/, so nothing hotlinks (article images move,
 // die, or block hotlinking).
 //
 // Junk guard: lead images narrower than 300px (favicons, site logos) are

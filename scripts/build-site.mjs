@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Assemble the small static Vercel bundle. Collection, profiles, archives, and
 // private operating instructions never leave the machine.
-import { mkdirSync, copyFileSync, cpSync, existsSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, copyFileSync, existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { isAbsolute, relative, resolve, sep } from "node:path";
 import { loadShelfConfig } from "../core/shelf-config.mjs";
 import { loadItems, report } from "../core/validate-items.mjs";
 import { loadRuns, reportRuns } from "../core/validate-runs.mjs";
@@ -10,7 +11,8 @@ import { loadOpenness, reportOpenness } from "../core/validate-openness.mjs";
 import { enginePath, instancePath } from "../core/paths.mjs";
 
 // Gate: never build a bundle from malformed data.
-if (!report(loadItems())) {
+const items = loadItems();
+if (!report(items)) {
   console.error("\nbuild aborted — fix the schema errors above before deploying.");
   process.exit(1);
 }
@@ -46,8 +48,24 @@ copyFileSync(instancePath("data", "runs.js"), out("data", "runs.js"));
 copyFileSync(instancePath("data", "learning.js"), out("data", "learning.js"));
 copyFileSync(instancePath("data", "openness.js"), out("data", "openness.js"));
 
-// Self-hosted media (localized Instagram covers/avatars) ships as static assets.
+// Ship only media used by active cards. Archived cards are not in this bundle,
+// and copying their media into every deployment needlessly grows storage.
+rmSync(out("media"), { recursive: true, force: true });
 const mediaSrc = instancePath("media");
-if (existsSync(mediaSrc)) cpSync(mediaSrc, out("media"), { recursive: true });
+const localMedia = new Set();
+for (const item of items) {
+  for (const value of [item.avatar, item.image, ...(item.images || [])]) {
+    if (typeof value === "string" && value.startsWith("/media/")) localMedia.add(value);
+  }
+}
+for (const url of localMedia) {
+  const source = resolve(mediaSrc, url.slice("/media/".length));
+  const path = relative(mediaSrc, source);
+  if (!path || path === ".." || path.startsWith(`..${sep}`) || isAbsolute(path) || !existsSync(source))
+    throw new Error(`missing or invalid local media: ${url}`);
+  const target = out("media", path);
+  mkdirSync(resolve(target, ".."), { recursive: true });
+  copyFileSync(source, target);
+}
 
-console.log("built public/ (wall assets + active items/runs + learning and openness tracks)");
+console.log(`built public/ (wall assets + active items/runs + ${localMedia.size} media files + learning and openness tracks)`);

@@ -6,7 +6,7 @@
 // the wall renders broken. This tool fetches the bytes *inside* the logged-in
 // browser session (where the request is valid), saves them as static assets under
 // media/ig/, and repoints each card at the self-hosted copy. The build step
-// copies media/ into public/, and the schema/renderer accept a "/media/…" path.
+// copies active cards' media into public/, and the schema/renderer accept a "/media/…" path.
 //
 // Media comes from the post page's structured hydration JSON (the same
 // image_versions2 candidates the web app renders from), NOT from og:image:
