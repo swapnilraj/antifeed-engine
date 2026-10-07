@@ -16,7 +16,8 @@ if (!report(items)) {
   console.error("\nbuild aborted — fix the schema errors above before deploying.");
   process.exit(1);
 }
-if (!reportRuns(loadRuns())) {
+const runs = loadRuns();
+if (!reportRuns(runs)) {
   console.error("\nbuild aborted — fix the run-log schema errors above before deploying.");
   process.exit(1);
 }
@@ -44,7 +45,9 @@ writeFileSync(out("index.html"), html.replace(shelfTag,
 for (const asset of ["wall.css", "wall-renderers.js", "wall-state.js", "wall-read-tracker.js", "wall-media.js", "wall-feedback.js", "wall-learning-template.js", "wall-learning-schedule.js", "wall-learning.js", "wall-shelf-life.js", "wall-openness-model.js", "wall-openness.js", "wall-app.js"])
   copyFileSync(enginePath("web", asset), out("web", asset));
 copyFileSync(instancePath("data", "items.js"), out("data", "items.js"));
-copyFileSync(instancePath("data", "runs.js"), out("data", "runs.js"));
+// The UI only displays the latest sweep. Keep the full run history in the
+// instance, but do not make every visit download and parse it.
+writeFileSync(out("data", "runs.js"), `window.WALL_RUNS = ${JSON.stringify(runs.slice(0, 1))};\n`);
 copyFileSync(instancePath("data", "learning.js"), out("data", "learning.js"));
 copyFileSync(instancePath("data", "openness.js"), out("data", "openness.js"));
 

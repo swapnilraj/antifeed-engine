@@ -353,6 +353,7 @@
   .end { text-align: center; color: var(--muted); padding: 2.5rem 1rem 3rem; font-size: 0.9rem; }
   .end::before { content: "◦ ◦ ◦"; display: block; letter-spacing: 0.5em; margin-bottom: 0.5rem; }
   .end b { color: var(--text); }
+  .feed-loading { color: var(--muted); min-height: 45vh; padding: 4rem 1rem; text-align: center; }
 
   /* ---- attention layer: keep me here, but only with signal ---- */
   /* unseen-since-last-visit: the "unread" pull, but it resolves (finite), never nags */

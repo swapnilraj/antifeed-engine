@@ -16,6 +16,7 @@
     const s = String(u == null ? "" : u).trim();
     return (/^https?:\/\//i.test(s) || /^\/[^/\\]/.test(s)) ? s : "";
   }
+  const lazyImage = 'loading="lazy" decoding="async"';
   // A swipeable multi-image carousel (CSS scroll-snap — swiping works with no
   // JS; wall-app.js only updates the count/dots indicator on scroll). A one-item
   // array falls back to a single framed image. Rendered inside the Instagram
@@ -23,8 +24,8 @@
   function carousel(images) {
     const imgs = (Array.isArray(images) ? images : []).map(safeUrl).filter(Boolean);
     if (!imgs.length) return "";
-    if (imgs.length === 1) return `<div class="media-wrap"><img class="media" src="${esc(imgs[0])}" alt=""></div>`;
-    const slides = imgs.map(u => `<img class="media carousel-slide" src="${esc(u)}" alt="">`).join("");
+    if (imgs.length === 1) return `<div class="media-wrap"><img class="media" src="${esc(imgs[0])}" alt="" ${lazyImage}></div>`;
+    const slides = imgs.map(u => `<img class="media carousel-slide" src="${esc(u)}" alt="" ${lazyImage}>`).join("");
     const dots = imgs.map((_, idx) => `<span class="carousel-dot${idx === 0 ? " active" : ""}"></span>`).join("");
     return `<div class="carousel">
         <div class="carousel-track">${slides}</div>
@@ -36,7 +37,7 @@
     const initial = ((i.author || "?").trim()[0] || "?").toUpperCase();
     // data-initial lets the error handler restore the letter when a signed
     // avatar URL fails to load (common for Instagram/CDN images off-platform).
-    return `<div class="avatar ${cls || ""}" data-initial="${esc(initial)}">${i.avatar ? `<img src="${esc(safeUrl(i.avatar))}" alt="">` : initial}</div>`;
+    return `<div class="avatar ${cls || ""}" data-initial="${esc(initial)}">${i.avatar ? `<img src="${esc(safeUrl(i.avatar))}" alt="" ${lazyImage}>` : initial}</div>`;
   }
   const I = { // icon paths (24x24 viewBox)
     reply: '<path d="M12 3c5 0 9 3.6 9 8s-4 8-9 8c-1 0-2-.14-2.9-.4L4 21l1.3-3.9C3.9 15.7 3 13.9 3 11c0-4.4 4-8 9-8z"/>',
@@ -107,7 +108,7 @@
   function tweet(i) {
     const s = i.stats || {};
     return feedCard(i, {
-      linkMedia: i.image ? `<img class="media" src="${esc(safeUrl(i.image))}" alt="">` : "",
+      linkMedia: i.image ? `<img class="media" src="${esc(safeUrl(i.image))}" alt="" ${lazyImage}>` : "",
       actions: [
         action("reply", s.replies), action("rt", s.reposts), action("like", s.likes),
         action("views", s.views), action("bmk"), action("share")
@@ -128,12 +129,12 @@
     const hasCarousel = Array.isArray(i.images) && i.images.length > 1;
     let media;
     if (isReel && i.video) {
-      media = `<div class="media-wrap ig-play" data-video="${esc(safeUrl(i.video))}" role="button" tabindex="0" aria-label="Play reel inline"><img class="media" src="${esc(safeUrl(i.image))}" alt=""><span class="play-badge"></span></div>`;
+      media = `<div class="media-wrap ig-play" data-video="${esc(safeUrl(i.video))}" role="button" tabindex="0" aria-label="Play reel inline"><img class="media" src="${esc(safeUrl(i.image))}" alt="" ${lazyImage}><span class="play-badge"></span></div>`;
     } else if (hasCarousel) {
       // Multi-image carousel: swipes in place (a count + dots cue the extra images).
       media = carousel(i.images);
     } else if (i.image) {
-      media = `<a class="orig" ${link}><div class="media-wrap"><img class="media" src="${esc(safeUrl(i.image))}" alt="">${isReel ? `<span class="reel-badge">▶</span>` : ""}</div></a>`;
+      media = `<a class="orig" ${link}><div class="media-wrap"><img class="media" src="${esc(safeUrl(i.image))}" alt="" ${lazyImage}>${isReel ? `<span class="reel-badge">▶</span>` : ""}</div></a>`;
     } else {
       media = `<a class="orig" ${link}><div class="textonly">${esc(i.text)}</div></a>`;
     }
@@ -160,7 +161,7 @@
     // Multi-image carousels never reach here — they route to the Instagram
     // renderer via isGallery() — so this only handles the single-image case.
     const media = i.image
-      ? `<a class="orig" href="${esc(safeUrl(i.url))}" target="_blank" rel="noopener"><img class="media" src="${esc(safeUrl(i.image))}" alt=""></a>`
+      ? `<a class="orig" href="${esc(safeUrl(i.url))}" target="_blank" rel="noopener"><img class="media" src="${esc(safeUrl(i.image))}" alt="" ${lazyImage}></a>`
       : "";
     return `<article class="linkcard${media ? " has-media" : ""}" data-item-id="${esc(i.id)}">
       <div class="head"><span class="name">${esc(i.author)}</span>
@@ -214,13 +215,13 @@
     const isVid = i.source === "youtube";
     const vid = isVid ? ytId(i.url) : "";
     // non-video sources: image sits inside the outbound link, as before.
-    const inlineMedia = (!isVid && i.image) ? `<img class="media" src="${esc(safeUrl(i.image))}" alt="">` : "";
+    const inlineMedia = (!isVid && i.image) ? `<img class="media" src="${esc(safeUrl(i.image))}" alt="" ${lazyImage}>` : "";
     // youtube: a click-to-play facade OUTSIDE the link — clicking swaps in an
     // inline iframe (see the feed handler below) instead of navigating away.
     const ytMedia = isVid && i.image
       ? (vid
-          ? `<div class="media-wrap yt-play" data-yt="${esc(vid)}" role="button" tabindex="0" aria-label="Play video inline"><img class="media" src="${esc(safeUrl(i.image))}" alt=""><span class="play-badge"></span></div>`
-          : `<span class="media-wrap"><img class="media" src="${esc(safeUrl(i.image))}" alt=""><span class="play-badge"></span></span>`)
+          ? `<div class="media-wrap yt-play" data-yt="${esc(vid)}" role="button" tabindex="0" aria-label="Play video inline"><img class="media" src="${esc(safeUrl(i.image))}" alt="" ${lazyImage}><span class="play-badge"></span></div>`
+          : `<span class="media-wrap"><img class="media" src="${esc(safeUrl(i.image))}" alt="" ${lazyImage}><span class="play-badge"></span></span>`)
       : "";
     return feedCard(i, {
       badge,

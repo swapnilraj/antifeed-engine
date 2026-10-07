@@ -1,28 +1,32 @@
-(async () => {
+(() => {
   "use strict";
   const Wall = window.Wall;
   const items = window.WALL_ITEMS || [];
   const { esc, renderItem } = Wall.renderers;
   const { ordered, newIds, wasRead, markRead } = Wall.state;
   const feed = document.getElementById("feed");
-  const learningCards = Wall.learning
-    ? await Wall.learning.createCards({ items }).catch(() => [])
-    : [];
-  const opennessCards = Wall.openness
-    ? await Wall.openness.init({ items }).catch(() => [])
-    : [];
-  const displayOrder = ordered.slice();
-  let learningCursor = 0;
-  learningCards.forEach((card, index) => {
-    if (index) learningCursor += (card.learning?.interleaveEvery || 7) + 1;
-    displayOrder.splice(Math.min(learningCursor, displayOrder.length), 0, card);
-  });
-  opennessCards.sort((a, b) => a.insertAfter - b.insertAfter).forEach(card => {
-    displayOrder.splice(Math.min(card.insertAfter, displayOrder.length), 0, card);
-  });
+  const end = document.getElementById("end");
+  const PAGE_SIZE = 24;
+  let learningCards = [];
+  let opennessCards = [];
+  let displayOrder = [];
+  function rebuildDisplayOrder() {
+    displayOrder = ordered.slice();
+    let learningCursor = 0;
+    learningCards.forEach((card, index) => {
+      if (index) learningCursor += (card.learning?.interleaveEvery || 7) + 1;
+      displayOrder.splice(Math.min(learningCursor, displayOrder.length), 0, card);
+    });
+    opennessCards.sort((a, b) => a.insertAfter - b.insertAfter).forEach(card => {
+      displayOrder.splice(Math.min(card.insertAfter, displayOrder.length), 0, card);
+    });
+  }
+  rebuildDisplayOrder();
   const initiallyRead = new Set(items.filter(item => wasRead(item.id)).map(item => item.id));
   let activeSource = "all";
   let activeCategory = "all";
+  let shown = [];
+  let renderedCount = 0;
 
   const escapedId = id => window.CSS?.escape ? CSS.escape(id) : id;
   const cardId = element => element?.dataset?.itemId;
@@ -108,19 +112,8 @@
     shareFrom(share);
   });
 
-  function render() {
-    const shown = displayOrder.filter(item =>
-      !(item.source === "learning" && Wall.learning?.wasAnswered(item.id)) &&
-      (activeSource === "all" || item.source === activeSource) &&
-      (activeCategory === "all" || item.category === activeCategory));
-
-    feed.innerHTML = shown.map(renderItem).join("");
-    feed.querySelectorAll("article[data-item-id]").forEach(card => {
-      const id = cardId(card);
-      card.classList.toggle("isnew", newIds.has(id));
-      card.classList.toggle("isread", wasRead(id));
-    });
-
+  function placeReadDivider() {
+    if (feed.querySelector(".caughtup")) return;
     const firstRead = shown.find(item => initiallyRead.has(item.id));
     if (firstRead && shown.some(item => !initiallyRead.has(item.id))) {
       const divider = document.createElement("div");
@@ -128,9 +121,35 @@
       divider.textContent = "caught up — everything below you've already read";
       feed.querySelector(`article[data-item-id="${escapedId(firstRead.id)}"]`)?.before(divider);
     }
+  }
 
+  function appendNextPage(count = PAGE_SIZE) {
+    if (renderedCount >= shown.length) return;
+    const next = Math.min(renderedCount + count, shown.length);
+    const page = shown.slice(renderedCount, next);
+    feed.insertAdjacentHTML("beforeend", page.map(renderItem).join(""));
+    renderedCount = next;
+    page.forEach(item => {
+      const card = feed.querySelector(`article[data-item-id="${escapedId(item.id)}"]`);
+      if (!card) return;
+      card.classList.toggle("isnew", newIds.has(item.id));
+      card.classList.toggle("isread", wasRead(item.id));
+    });
+    placeReadDivider();
     feedback.paint();
     readTracker.arm();
+    buildEnd();
+  }
+
+  function render(limit = PAGE_SIZE) {
+    shown = displayOrder.filter(item =>
+      !(item.source === "learning" && Wall.learning?.wasAnswered(item.id)) &&
+      (activeSource === "all" || item.source === activeSource) &&
+      (activeCategory === "all" || item.category === activeCategory));
+    feed.innerHTML = "";
+    renderedCount = 0;
+    appendNextPage(Math.max(PAGE_SIZE, limit));
+    if (!shown.length) buildEnd();
   }
 
   function installFilters(element, values, select, label = value => value) {
@@ -149,7 +168,11 @@
 
   function buildEnd() {
     const total = items.filter(item => item.id).length;
-    document.getElementById("end").innerHTML = newIds.size
+    if (renderedCount < shown.length) {
+      end.innerHTML = `<b>${renderedCount}</b> of ${shown.length} cards shown — scroll for more.`;
+      return;
+    }
+    end.innerHTML = newIds.size
       ? `You're caught up on ${newIds.size} new. <b>${total}</b> cards of signal, zero noise — come back tomorrow.`
       : `<b>${total}</b> cards of signal, zero noise. The wall ends here — that's the point.`;
   }
@@ -172,5 +195,33 @@
   installFilters(document.getElementById("catFilters"), categories, value => activeCategory = value);
   installAutoHideHeader();
   render();
-  buildEnd();
+
+  const pageObserver = new IntersectionObserver(entries => {
+    if (entries.some(entry => entry.isIntersecting)) appendNextPage();
+  }, { rootMargin: "900px 0px" });
+  pageObserver.observe(end);
+
+  // Learning and openness sync with the server, but neither should hold the
+  // first screen hostage. Paint the normal wall first, then merge any runtime
+  // cards while preserving the reader's position.
+  Promise.all([
+    Wall.learning ? Wall.learning.createCards({ items }).catch(() => []) : [],
+    Wall.openness ? Wall.openness.init({ items }).catch(() => []) : [],
+  ]).then(([nextLearning, nextOpenness]) => {
+    learningCards = nextLearning;
+    opennessCards = nextOpenness;
+    feedback.paint();
+    if (!learningCards.length && !opennessCards.length) return;
+    const anchor = [...feed.querySelectorAll("article[data-item-id]")]
+      .find(card => card.getBoundingClientRect().bottom > 0);
+    const anchorId = cardId(anchor);
+    const anchorTop = anchor?.getBoundingClientRect().top;
+    const limit = renderedCount;
+    rebuildDisplayOrder();
+    render(limit);
+    if (anchorId && anchorTop != null) requestAnimationFrame(() => {
+      const restored = feed.querySelector(`article[data-item-id="${escapedId(anchorId)}"]`);
+      if (restored) window.scrollBy(0, restored.getBoundingClientRect().top - anchorTop);
+    });
+  });
 })();
