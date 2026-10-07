@@ -316,7 +316,7 @@ async function release() {
   const pack = execFileSync("npm", ["pack", "--dry-run"], { cwd: ENGINE_ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
   if (/npm notice [\d.]+[kMB]+ +(data|media|algorithm)\//.test(pack)) throw new Error("release: the package would ship instance data — fix .npmignore");
   const pin = `${pkg.repository}#v`;
-  const files = ["README.md", "docs/setup.md", "AGENTS.md", "template/README.md", "template/AGENTS.md"].map(f => enginePath(f)).filter(existsSync);
+  const files = ["README.md", "docs/setup.md", "AGENTS.md", "template/README.md", "template/AGENTS.md", "template/package.json"].map(f => enginePath(f)).filter(existsSync);
   const touched = [];
   for (const f of files) {
     const before = readFileSync(f, "utf8");
